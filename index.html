@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Break Time Calculator</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            padding-top: 60px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 320px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card>div {
+            display: flex;
+            flex-direction: column;
+            gap: 8px 0;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Break Time Calculator</h2>
+        <div>
+            <label>Current Timer time (HH:MM)</label>
+            <input type="text" id="currentTimer" placeholder="Timer time (e.g. 4:00)"
+                onkeypress="handleKeyPress(event)">
+        </div>
+        <button onclick="calculateBreak()">Calculate</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function parseTime(str) {
+            const [h, m] = str.split(":").map(Number);
+            return h * 60 + m;
+        }
+
+        function calculateBreak() {
+            const currentTimerStr = document.getElementById("currentTimer").value;
+            if (!currentTimerStr.includes(":")) {
+                document.getElementById("result").innerText = "Enter Timer time as HH:MM";
+                return;
+            }
+
+            const currentTimerMins = parseTime(currentTimerStr);
+            const targetTimerMins = 7 * 60 + 5; // 7 hrs 5 min = 425 min
+
+            const now = new Date();
+            const currentClockMins = now.getHours() * 60 + now.getMinutes();
+            const targetClockMins = 16 * 60; // 4:00 PM = 960 min
+
+            const timerRemaining = targetTimerMins - currentTimerMins;
+            const realTimeRemaining = targetClockMins - currentClockMins;
+            const breakTime = realTimeRemaining - timerRemaining;
+
+            const endMins = currentClockMins + timerRemaining;
+            const endHour = Math.floor(endMins / 60);
+            const endMin = endMins % 60;
+            const formattedTime = new Date();
+            formattedTime.setHours(endHour);
+            formattedTime.setMinutes(endMin);
+
+            const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+            const timeString = formattedTime.toLocaleTimeString([], options);
+
+            let message = '';
+            if (breakTime < 0) {
+                message = `😢 You're behind by ${-Math.floor(breakTime / 60)} hrs and ${Math.abs(breakTime % 60)} mins!`;
+            } else if (breakTime > 60) {
+                message = `🥳 Wow! You can take a long break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins!`;
+            } else if (breakTime < 30) {
+                message = `😟 You can only take a short break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
+            } else {
+                message = `😄 You can take a break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
+            }
+
+            document.getElementById("result").innerText = `${message}\n⏰ You'll reach 7 hrs 5 mins at ${timeString}`;
+        }
+
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                calculateBreak();
+            }
+        }
+    </script>
+
+</body>
+
+</html>
