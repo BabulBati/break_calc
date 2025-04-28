@@ -110,7 +110,11 @@
 
             let message = '';
             if (breakTime < 0) {
-                message = `😢 You're behind by ${-Math.floor(breakTime / 60)} hrs and ${Math.abs(breakTime % 60)} mins!`;
+                // Updated message when you're behind schedule (handling minutes properly)
+                const overTimeMins = Math.abs(breakTime); // Get the absolute value of the over time
+                const overTimeHours = Math.floor(overTimeMins / 60); // Get the hours
+                const overTimeMinutes = overTimeMins % 60; // Get the minutes
+                message = `😟 You need to stay more! You're behind by ${overTimeHours} hrs and ${overTimeMinutes} mins.`;
             } else if (breakTime > 60) {
                 message = `🥳 Wow! You can take a long break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins!`;
             } else if (breakTime < 30) {
@@ -121,6 +125,7 @@
 
             document.getElementById("result").innerText = `${message}\n⏰ You'll reach 7 hrs 5 mins at ${timeString}`;
         }
+
 
 
         function handleKeyPress(event) {
