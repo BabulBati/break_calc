@@ -9,8 +9,11 @@
             font-family: sans-serif;
             background: #f0f0f0;
             display: flex;
+            gap: 20px;
             justify-content: center;
             padding-top: 60px;
+            flex-direction: column;
+            align-items: center;
         }
 
         .card {
@@ -19,6 +22,11 @@
             border-radius: 16px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 320px;
+            display: none;
+        }
+
+        .card.active {
+            display: block;
         }
 
         h2 {
@@ -51,48 +59,117 @@
             cursor: pointer;
         }
 
-        #result {
+        .result {
             margin-top: 20px;
             font-size: 16px;
             text-align: center;
             font-weight: bold;
+        }
+
+        .toggle_shift {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .toggle_shift>span {
+            padding: 12px 24px;
+            border-radius: 4px;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .toggle_shift>span.active {
+            color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .text_center {
+            align-items: center;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="card">
+    <div class="text_center">
+        <div class="toggle_shift">
+            <span class="active" onclick="toggle_card('fullday')">Full Day</span>
+            <span onclick="toggle_card('halfday')">Half Day</span>
+        </div>
+    </div>
+
+    <div class="card fullday active">
         <h2>Break Time Calculator</h2>
         <div>
             <label>Current Timer time (HH:MM)</label>
-            <input type="text" id="currentTimer" placeholder="Timer time (e.g. 4:00)"
-                onkeypress="handleKeyPress(event)">
+            <input type="text" class="currentTimer fullday-input" placeholder="Timer time (e.g. 4:00)"
+                onkeypress="handleKeyPress(event, 'fullday')">
         </div>
-        <button onclick="calculateBreak()">Calculate</button>
+        <button onclick="calculateBreak('fullday')">Calculate</button>
 
-        <div id="result"></div>
+        <div class="result fullday-result"></div>
+    </div>
+
+    <div class="card halfday">
+        <h2>Half Day Calculator</h2>
+        <div>
+            <label>Current Timer time (HH:MM)</label>
+            <input type="text" class="currentTimer halfday-input" placeholder="Timer time (e.g. 4:00)"
+                onkeypress="handleKeyPress(event, 'halfday')">
+        </div>
+        <button onclick="calculateBreak('halfday')">Calculate</button>
+
+        <div class="result halfday-result"></div>
     </div>
 
     <script>
+        function toggle_card(card) {
+            if (card === "fullday") {
+                document.querySelector('.halfday').classList.remove('active');
+                document.querySelector('.fullday').classList.add('active');
+            }
+            else {
+                document.querySelector('.halfday').classList.add('active');
+                document.querySelector('.fullday').classList.remove('active');
+            }
+            // Toggle active tab styling
+            document.querySelectorAll('.toggle_shift span').forEach(span => {
+                span.classList.remove('active');
+            });
+            const tabToActivate = document.querySelector(`.toggle_shift span[onclick*="${card}"]`);
+            tabToActivate.classList.add('active');
+
+        }
+
+
+
         function parseTime(str) {
             const [h, m] = str.split(":").map(Number);
             return h * 60 + m;
         }
 
-        function calculateBreak() {
-            const currentTimerStr = document.getElementById("currentTimer").value;
+        function calculateBreak(day_shift) {
+            const input = document.querySelector(`.${day_shift}-input`);
+            const resultDiv = document.querySelector(`.${day_shift}-result`);
+
+            const currentTimerStr = input.value.trim();
             if (!currentTimerStr.includes(":")) {
-                document.getElementById("result").innerText = "Enter Timer time as HH:MM";
+                resultDiv.innerText = "⛔ Enter Timer time as HH:MM";
                 return;
             }
 
             const currentTimerMins = parseTime(currentTimerStr);
-            const targetTimerMins = 7 * 60 + 5; // 7 hrs 5 min = 425 min
+            const targetTimerMins = (day_shift === "fullday") ? (7 * 60 + 5) : (4 * 60 + 5);
 
             const now = new Date();
             const currentClockMins = now.getHours() * 60 + now.getMinutes();
-            const targetClockMins = 16 * 60; // 4:00 PM = 960 min
+            const targetClockMins = 16 * 60; // 4:00 PM
 
             const timerRemaining = targetTimerMins - currentTimerMins;
             const realTimeRemaining = targetClockMins - currentClockMins;
@@ -101,6 +178,7 @@
             const endMins = currentClockMins + timerRemaining;
             const endHour = Math.floor(endMins / 60);
             const endMin = endMins % 60;
+
             const formattedTime = new Date();
             formattedTime.setHours(endHour);
             formattedTime.setMinutes(endMin);
@@ -109,28 +187,26 @@
             const timeString = formattedTime.toLocaleTimeString([], options);
 
             let message = '';
-            if (breakTime < 0) {
-                // Updated message when you're behind schedule (handling minutes properly)
-                const overTimeMins = Math.abs(breakTime); // Get the absolute value of the over time
-                const overTimeHours = Math.floor(overTimeMins / 60); // Get the hours
-                const overTimeMinutes = overTimeMins % 60; // Get the minutes
-                message = `😟 You need to stay more! You're behind by ${overTimeHours} hrs and ${overTimeMinutes} mins.`;
-            } else if (breakTime > 60) {
-                message = `🥳 Wow! You can take a long break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins!`;
-            } else if (breakTime < 30) {
-                message = `😟 You can only take a short break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
-            } else {
-                message = `😄 You can take a break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
+            if (day_shift === "fullday") {
+                if (breakTime < 0) {
+                    const overTimeMins = Math.abs(breakTime);
+                    message = `😟 You're behind by ${Math.floor(overTimeMins / 60)} hrs and ${overTimeMins % 60} mins.`;
+                } else if (breakTime > 60) {
+                    message = `🥳 Long break! ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
+                } else if (breakTime < 30) {
+                    message = `😟 Short break: ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
+                } else {
+                    message = `😄 You can take a break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
+                }
             }
 
-            document.getElementById("result").innerText = `${message}\n⏰ You'll reach 7 hrs 5 mins at ${timeString}`;
+            const targetText = (day_shift === "fullday") ? "7 hrs 5 mins" : "4 hrs 5 mins";
+            resultDiv.innerText = `${message}\n⏰ You'll reach ${targetText} at ${timeString}`;
         }
 
-
-
-        function handleKeyPress(event) {
+        function handleKeyPress(event, type) {
             if (event.key === "Enter") {
-                calculateBreak();
+                calculateBreak(type);
             }
         }
     </script>
