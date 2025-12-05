@@ -109,7 +109,7 @@
         <div>
             <label>Current Timer time (HH:MM)</label>
             <input type="text" class="currentTimer fullday-input" placeholder="Timer time (e.g. 4:00)"
-                onkeypress="handleKeyPress(event, 'fullday')">
+                onkeypress="handleKeyPress(event, 'fullday')" autofocus>
         </div>
         <button onclick="calculateBreak('fullday')">Calculate</button>
 
@@ -130,14 +130,11 @@
 
     <script>
         function toggle_card(card) {
-            if (card === "fullday") {
-                document.querySelector('.halfday').classList.remove('active');
-                document.querySelector('.fullday').classList.add('active');
-            }
-            else {
-                document.querySelector('.halfday').classList.add('active');
-                document.querySelector('.fullday').classList.remove('active');
-            }
+            const isFull = card === "fullday";
+            document.querySelector('.halfday').classList.toggle('active', !isFull);
+            document.querySelector('.fullday').classList.toggle('active', isFull);
+            document.querySelector(`.${isFull ? 'fullday' : 'halfday'}-input`).focus();
+
             // Toggle active tab styling
             document.querySelectorAll('.toggle_shift span').forEach(span => {
                 span.classList.remove('active');
