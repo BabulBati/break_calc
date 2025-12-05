@@ -4,99 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Break Time Calculator</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background: #f0f0f0;
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            padding-top: 60px;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 320px;
-            display: none;
-        }
-
-        .card.active {
-            display: block;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .card>div {
-            display: flex;
-            flex-direction: column;
-            gap: 8px 0;
-        }
-
-        input {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .result {
-            margin-top: 20px;
-            font-size: 16px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .toggle_shift {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: rgba(0, 0, 0, 0.1);
-            padding: 8px;
-            border-radius: 4px;
-        }
-
-        .toggle_shift>span {
-            padding: 12px 24px;
-            border-radius: 4px;
-            color: rgba(255, 255, 255, 0.9);
-            background: rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-        }
-
-        .toggle_shift>span.active {
-            color: rgba(0, 0, 0, 0.6);
-            background-color: rgba(255, 255, 255, 0.6);
-        }
-
-        .text_center {
-            align-items: center;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-
     <div class="text_center">
         <div class="toggle_shift">
             <span class="active" onclick="toggle_card('fullday')">Full Day</span>
@@ -128,86 +39,7 @@
         <div class="result halfday-result"></div>
     </div>
 
-    <script>
-        function toggle_card(card) {
-            const isFull = card === "fullday";
-            document.querySelector('.halfday').classList.toggle('active', !isFull);
-            document.querySelector('.fullday').classList.toggle('active', isFull);
-            document.querySelector(`.${isFull ? 'fullday' : 'halfday'}-input`).focus();
-
-            // Toggle active tab styling
-            document.querySelectorAll('.toggle_shift span').forEach(span => {
-                span.classList.remove('active');
-            });
-            const tabToActivate = document.querySelector(`.toggle_shift span[onclick*="${card}"]`);
-            tabToActivate.classList.add('active');
-
-        }
-
-
-
-        function parseTime(str) {
-            const [h, m] = str.split(":").map(Number);
-            return h * 60 + m;
-        }
-
-        function calculateBreak(day_shift) {
-            const input = document.querySelector(`.${day_shift}-input`);
-            const resultDiv = document.querySelector(`.${day_shift}-result`);
-
-            const currentTimerStr = input.value.trim();
-            if (!currentTimerStr.includes(":")) {
-                resultDiv.innerText = "⛔ Enter Timer time as HH:MM";
-                return;
-            }
-
-            const currentTimerMins = parseTime(currentTimerStr);
-            const targetTimerMins = (day_shift === "fullday") ? (7 * 60 + 5) : (4 * 60 + 5);
-
-            const now = new Date();
-            const currentClockMins = now.getHours() * 60 + now.getMinutes();
-            const targetClockMins = 16 * 60; // 4:00 PM
-
-            const timerRemaining = targetTimerMins - currentTimerMins;
-            const realTimeRemaining = targetClockMins - currentClockMins;
-            const breakTime = realTimeRemaining - timerRemaining;
-
-            const endMins = currentClockMins + timerRemaining;
-            const endHour = Math.floor(endMins / 60);
-            const endMin = endMins % 60;
-
-            const formattedTime = new Date();
-            formattedTime.setHours(endHour);
-            formattedTime.setMinutes(endMin);
-
-            const options = { hour: 'numeric', minute: 'numeric', hour12: true };
-            const timeString = formattedTime.toLocaleTimeString([], options);
-
-            let message = '';
-            if (day_shift === "fullday") {
-                if (breakTime < 0) {
-                    const overTimeMins = Math.abs(breakTime);
-                    message = `😟 You're behind by ${Math.floor(overTimeMins / 60)} hrs and ${overTimeMins % 60} mins.`;
-                } else if (breakTime > 60) {
-                    message = `🥳 Long break! ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
-                } else if (breakTime < 30) {
-                    message = `😟 Short break: ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
-                } else {
-                    message = `😄 You can take a break of ${Math.floor(breakTime / 60)} hrs and ${breakTime % 60} mins.`;
-                }
-            }
-
-            const targetText = (day_shift === "fullday") ? "7 hrs 5 mins" : "4 hrs 5 mins";
-            resultDiv.innerText = `${message}\n⏰ You'll reach ${targetText} at ${timeString}`;
-        }
-
-        function handleKeyPress(event, type) {
-            if (event.key === "Enter") {
-                calculateBreak(type);
-            }
-        }
-    </script>
-
+    <script src="script/test_script.js"></script>
 </body>
 
 </html>
