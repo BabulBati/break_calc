@@ -105,7 +105,8 @@ function calculateBreak(day_shift) {
         let message = "";
         if (day_shift === "fullday") {
             if (breakTime < 0) {
-                message = `😟 You're behind by ${fmt(timerRemaining)}.`;
+                const overTimeMins = Math.abs(breakTime);
+                message = `😟 You're behind by ${Math.floor(overTimeMins / 60)} hrs and ${overTimeMins % 60} mins.`;
             } else if (breakTime > 60) {
                 message = `🥳 Long break! ${fmt(breakTime)}.`;
             } else if (breakTime < 30) {
